@@ -1,0 +1,2 @@
+# typesense-kubernetes
+Typesense Kubernetes 

@@ -14,7 +14,7 @@ This repo hosts kustomize files for deploying typesense in a kubernetes cluster.
 > git clone https://github.com/typesense/typesense-kubernetes
 
 
-2. modify the overlays/org1/kustomization.yaml file according to your needs
+2. modify the overlays/dev/kustomization.yaml file according to your needs
 
 
 

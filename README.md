@@ -6,7 +6,7 @@ This repo hosts kustomize files for deploying typesense in a kubernetes cluster.
 
 ## Quickstart
 
-> kubectl apply -f 
+> kubectl apply -f https://raw.githubusercontent.com/typesense/typesense-kubernetes/master/base/install.yaml
 ## Detailed setup:
 
 1. Clone the repo

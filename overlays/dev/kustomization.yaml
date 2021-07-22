@@ -1,0 +1,50 @@
+resources:
+  - ../../base
+
+# namespace where typesense will be installed
+namespace: typesense
+
+patches:
+- target:
+    kind: StatefulSet
+    name: typesense
+  patch: |-
+    - op: replace
+      path: /spec/template/spec/containers/0/image
+      value: typesense/typesense:0.21.0.rc-k8s-2
+    - op: replace
+      path: /spec/replicas
+      value: 3
+    - op: replace
+      path: /spec/volumeClaimTemplates/0/spec/storageClassName
+      value: gp2
+    - op: replace
+      path: /spec/volumeClaimTemplates/0/spec/resources/requests/storage
+      value: "10Gi"
+    - op: replace
+      path: /spec/template/spec/containers/0/resources/requests/memory
+      value: "112Mi"
+    - op: replace
+      path: /spec/template/spec/containers/0/resources/requests/cpu
+      value: "128m"
+    - op: replace
+      path: /spec/template/spec/containers/0/resources/limits/memory
+      value: "512Mi"
+    - op: replace
+      path: /spec/template/spec/containers/0/resources/limits/cpu
+      value: "1024m"
+    - op: replace
+      path: /spec/template/spec/containers/0/command/4
+      value: Mycomplexpassword#6546
+
+# Add to the nodes list here if you change the number of replicas in statefulset
+- target:
+    kind: ConfigMap
+    name: nodelist
+  patch: |-
+    - op: replace
+      path: /data/nodes
+      value: "typesense-0.ts.typesense.svc.cluster.local:8107:8108,typesense-1.ts.typesense.svc.cluster.local:8107:8108,typesense-2.ts.typesense.svc.cluster.local:8107:8108"
+
+
+

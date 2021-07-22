@@ -1,0 +1,114 @@
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: typesense
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: ts
+  namespace: typesense
+spec:
+  clusterIP: None
+  selector:
+    app: typesense
+  ports:
+  - name: http
+    port: 8108
+    targetPort: 8108
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nodeslist
+  namespace: typesense
+data:
+  nodes: "typesense-0.ts.typesense.svc.cluster.local:8107:8108,typesense-1.ts.typesense.svc.cluster.local:8107:8108,typesense-2.ts.typesense.svc.cluster.local:8107:8108"
+    
+---
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: typesense
+  namespace: typesense
+  labels:
+    service: typesense
+    app: typesense
+spec:
+  serviceName: ts
+  podManagementPolicy: Parallel
+  # NOTE: This is number of nodes that we want to run
+  # you may update this
+  replicas: 3
+  selector:
+    matchLabels:
+      service: typesense
+      app: typesense
+  template:
+    metadata:
+      labels:
+        service: typesense
+        app: typesense
+    spec:
+      securityContext:
+        fsGroup: 2000
+        runAsUser: 10000
+        runAsGroup: 3000
+        runAsNonRoot: true
+      terminationGracePeriodSeconds: 300
+      containers:
+      - name: typesense
+        image: typesense/typesense:0.21.0.rc-k8s-1
+        command:
+          - "/opt/typesense-server"
+          - "-d"
+          - "/usr/share/typesense/data"
+          - "-a"
+          - "MySuperstrongpassword#6876876578"
+          - "--api-port"
+          - "8108"
+          - "--peering-port"
+          - "8107"
+          - "--nodes"
+          - "/usr/share/typesense/nodes"
+        ports:
+        - containerPort: 8108
+          name: http
+        # NOTE: you can increase these resources
+        resources:
+          requests:
+            memory: 100Mi
+            cpu: "64m"
+          limits:
+            memory: 256Mi
+            cpu: "512m"
+        volumeMounts:
+        - name: nodeslist
+          mountPath: /usr/share/typesense
+        - name: data
+          mountPath: /usr/share/typesense/data
+      volumes:
+        - name: nodeslist
+          configMap:
+            name: nodeslist
+            items:
+            - key: nodes
+              path: nodes
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      storageClassName: deafault
+      # NOTE: You can increase the storage size
+      resources:
+        requests:
+          storage: 10Gi
+

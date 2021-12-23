@@ -1,11 +1,12 @@
 
+# Creating a namespace
 apiVersion: v1
 kind: Namespace
 metadata:
   name: typesense
-
 ---
 
+# headless service used by cluster members to resolve ip's 
 apiVersion: v1
 kind: Service
 metadata:
@@ -22,14 +23,28 @@ spec:
 
 ---
 
+# This service is meant to route traffic to typesense
+apiVersion: v1
+kind: Service
+metadata:
+  name: typesense-svc
+  namespace: typesense
+spec:
+  selector:
+    app: typesense
+  ports:
+  - name: http
+    port: 8108
+    targetPort: 8108
+---
+
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: nodeslist
   namespace: typesense
 data:
-  nodes: "typesense-0.ts.typesense.svc.cluster.local:8107:8108,typesense-1.ts.typesense.svc.cluster.local:8107:8108,typesense-2.ts.typesense.svc.cluster.local:8107:8108"
-    
+  nodes: "typesense-0.ts.typesense.svc.cluster.local:8107:8108,typesense-1.ts.typesense.svc.cluster.local:8107:8108,typesense-2.ts.typesense.svc.cluster.local:8107:8108" 
 ---
 
 apiVersion: apps/v1
@@ -64,7 +79,8 @@ spec:
       terminationGracePeriodSeconds: 300
       containers:
       - name: typesense
-        image: typesense/typesense:0.21.0.rc-k8s-1
+        # NOTE : you can update to the latest release
+        image: typesense/typesense:0.22.1
         command:
           - "/opt/typesense-server"
           - "-d"
@@ -106,6 +122,7 @@ spec:
     spec:
       accessModes:
         - ReadWriteOnce
+      # NOTE: Make sure to update your storageClass depending on your provider
       storageClassName: default
       # NOTE: You can increase the storage size
       resources:

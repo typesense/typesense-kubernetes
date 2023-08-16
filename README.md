@@ -3,6 +3,8 @@
 
 This repo hosts kustomize files for deploying typesense in a kubernetes cluster.
 
+> ⚠️ This approach is not reliable with more than 1 replica: https://github.com/typesense/typesense/issues/465
+
 
 ## Quickstart
 
